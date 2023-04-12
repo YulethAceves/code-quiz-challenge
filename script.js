@@ -41,7 +41,6 @@ const quizData = [
     },
 ];
 
-
 const timeLimit = 60 * 1000;
 const intro = document.getElementById('intro')
 const startBtn = document.getElementById('start-btn')
@@ -59,10 +58,6 @@ const timer = document.getElementById('timer')
 
 const questionEl = document.getElementById('question')
 const answerEls = document.querySelectorAll('.answer')
-const a_text = document.getElementById('a_text')
-const b_text = document.getElementById('b_text')
-const c_text = document.getElementById('c_text')
-const d_text = document.getElementById('d_text')
 const a_text = document.getElementById('a')
 const b_text = document.getElementById('b')
 const c_text = document.getElementById('c')
@@ -74,8 +69,6 @@ homeBtn.addEventListener("click", returnHome);
 
 startBtn.addEventListener("click", startQuiz);
 
-let currentQuiz = 0
-let score = 0
 let highScoreMaxCount = 5;
 let highScoreInitials
 let currentQuiz
@@ -102,7 +95,6 @@ function updateTimer() {
     updateTimerText(timerValue)
 }
 
-// startQuiz()
 function startTimer() {
     timerValue = timeLimit;
     updateTimerText(timerValue)
@@ -114,7 +106,6 @@ function startQuiz() {
     score = 0;
     answer = null;
     quiz.style.display = "block";
-    intro.style.display = "none";
     intro.style.display = "none";
     highScoresBtn.style.visibility = "hidden";
     deselectAnswers()
@@ -133,11 +124,6 @@ function stopQuiz() {
     updateTimerText(-1);
     clearInterval(timerId);
 
-    questionEl.innerText = currentQuizData.question
-    a_text.innerText = currentQuizData.a
-    b_text.innerText = currentQuizData.b
-    c_text.innerText = currentQuizData.c
-    d_text.innerText = currentQuizData.d
     rank = 0
     let highScores = getHighScores();
     for (let highScore of highScores) {
@@ -217,7 +203,6 @@ function decrementTimer(value) {
 
 function deselectAnswers() {
     answerEls.forEach(answerEl => answerEl.checked = false)
-    answerEls.forEach(answerEl => answerEl.checked = false)
 }
 
 function setAnswer(e) {
@@ -232,77 +217,51 @@ function getHighScores() {
     return highScores
 }
 
-function getSelected() {
-    let answer
-    function getHighScore(position) {
-        let highScores = getHighScores();
-        if (!highScores)
-            return null
+function getHighScore(position) {
+    let highScores = getHighScores();
+    if (!highScores)
+        return null
 
-        answerEls.forEach(answerEl => {
-            if (answerEl.checked) {
-                answer = answerEl.id
-            }
-        })
-        if (highScores.length < position)
-            return null
+    if (highScores.length < position)
+        return null
 
-        return answer
-        return highScores[position]
+    return highScores[position]
+}
+
+function setHighScore(position, initials, correct) {
+    let highScores = getHighScores();
+    if (!highScores || !Array.isArray(highScores))
+        highScores = [];
+
+    highScores.splice(position, 0, { initials, correct })
+    if (highScores.length > highScoreMaxCount)
+        highScores.pop();
+
+    localStorage.setItem('highscores', JSON.stringify(highScores))
+}
+
+function showHighScores() {
+    updateHighScores();
+    scores.style.display = "block";
+    intro.style.display = "none";
+    quiz.style.display = "none";
+    highScoresBtn.style.visibility = "hidden";
+}
+
+function returnHome() {
+    scores.style.display = "none";
+    intro.style.display = "block";
+    highScoresBtn.style.visibility = "visible";
+}
+
+submitBtn.addEventListener('click', () => {
+    if (answer === quizData[currentQuiz].correct) {
+        score++;
     }
-
-    function setHighScore(position, initials, correct) {
-        let highScores = getHighScores();
-        if (!highScores || !Array.isArray(highScores))
-            highScores = [];
-
-        highScores.splice(position, 0, { initials, correct })
-        if (highScores.length > highScoreMaxCount)
-            highScores.pop();
-
-        localStorage.setItem('highscores', JSON.stringify(highScores))
+    else {
+        decrementTimer(5000);
+        updateTimerText(timerValue);
     }
-
-    function showHighScores() {
-        updateHighScores();
-        scores.style.display = "block";
-        intro.style.display = "none";
-        quiz.style.display = "none";
-        highScoresBtn.style.visibility = "hidden";
-    }
-
-    function returnHome() {
-        scores.style.display = "none";
-        intro.style.display = "block";
-        highScoresBtn.style.visibility = "visible";
-    }
-
-    submitBtn.addEventListener('click', () => {
-        const answer = getSelected()
-
-        if (answer) {
-            if (answer === quizData[currentQuiz].correct) {
-                score++
-            }
-
-            currentQuiz++
-
-            if (currentQuiz < quizData.length) {
-                loadQuiz()
-            } else {
-                quiz.innerHTML = `
-                <h2>You answered ${score}/${quizData.length} questions correctly</h2>
-                <button onclick="location.reload()">Reload</button>
-            `
-            }
-            if (answer === quizData[currentQuiz].correct) {
-                score++;
-            }
-            else {
-                decrementTimer(5000);
-                updateTimerText(timerValue);
-            }
-        })
 
     answer = null
     currentQuiz++;
